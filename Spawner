@@ -4,7 +4,17 @@ public class Spawner : MonoBehaviour
 {
     [SerializeField] private Rigidbody _cubePrefab;
 
-    public void SpawnCube(Vector3 position, Vector3 scale, float splitChance)
+    private void OnEnable()
+    {
+        EventBus.OnSplit += SpawnCube;
+    }
+
+    private void OnDisable()
+    {
+        EventBus.OnSplit -= SpawnCube;
+    }
+
+    private Rigidbody SpawnCube(Vector3 position, Vector3 scale, float splitChance)
     {
         Rigidbody cubeInstance = Instantiate(_cubePrefab, position, Quaternion.identity);
 
@@ -12,11 +22,8 @@ public class Spawner : MonoBehaviour
 
         Splitter splitter = cubeInstance.GetComponent<Splitter>();
 
-        if (splitter == null)
-        {
-            splitter = cubeInstance.gameObject.AddComponent<Splitter>();
-        }
-
         splitter.SetSplitChance(splitChance);
-    }
+
+        return cubeInstance;
+    }  
 }
