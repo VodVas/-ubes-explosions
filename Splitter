@@ -2,21 +2,21 @@ using UnityEngine;
 
 public class Splitter : MonoBehaviour
 {
-    private int _minQuantityCubes = 2;
-    private int _maxQuantityCubes = 6;
-    private float _splitChance;
-    private float _randomNumber;
+    [SerializeField] private float _splitChance = 1f;
+    [SerializeField] private float _explosionForce;
+
+    private Spawner _spawner;
+    private Rigidbody _rigidbody;
 
     private void Awake()
     {
-        _splitChance = 1f;
+        _spawner = GetComponent<Spawner>();
+        _rigidbody = GetComponent<Rigidbody>();
     }
 
     private void OnMouseDown()
     {
-        _randomNumber = Random.value;
-
-        if (_randomNumber <= _splitChance)
+        if (Random.value <= _splitChance)
         {
             Split();
         }
@@ -24,28 +24,23 @@ public class Splitter : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void SetSplitChance(float splitChance)
+    public void Init(float splitChance, Vector3 newScale, Vector3 oldPosition)
     {
         _splitChance = splitChance;
+        transform.localScale = newScale;
+
+        _rigidbody.AddForce((transform.position - oldPosition).normalized * _explosionForce, ForceMode.Impulse);
     }
 
     private void Split()
     {
-        int splitCount = Random.Range(_minQuantityCubes, _maxQuantityCubes + 1);
+        Vector3 newScale = transform.localScale / 2f;
+        float newSplitChance = _splitChance / 2f;
 
-        for (int i = 0; i < splitCount; i++)
+        foreach (var cube in _spawner.SpawnCubes())
         {
-            float offsetRadius = 0.5f;
-
-            Vector3 randomOffset = Random.insideUnitSphere * offsetRadius;
-
-            Vector3 newPosition = transform.position + randomOffset;
-
-            Vector3 newScale = transform.localScale / 2f;
-
-            float newSplitChance = _splitChance / 2f;
-
-            EventBus.OnClick?.Invoke(EventBus.OnSplit?.Invoke(newPosition, newScale, newSplitChance));
+            cube.transform.localScale = newScale;
+            cube.Init(newSplitChance, newScale, transform.position);
         }
     }
 }
