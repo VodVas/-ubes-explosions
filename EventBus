@@ -1,0 +1,9 @@
+using System;
+using UnityEngine;
+
+public static class EventBus
+{
+    public static Action<Rigidbody> OnClick;
+
+    public static Func<Vector3, Vector3, float, Rigidbody> OnSplit;
+}
