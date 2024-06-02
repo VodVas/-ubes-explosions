@@ -2,17 +2,14 @@ using UnityEngine;
 
 public class Splitter : MonoBehaviour
 {
-    private Spawner _cubeSpawner;
-
-    private float _splitChance;
     private int _minQuantityCubes = 2;
     private int _maxQuantityCubes = 6;
+    private float _splitChance;
     private float _randomNumber;
 
     private void Awake()
     {
         _splitChance = 1f;
-        _cubeSpawner = FindObjectOfType<Spawner>();
     }
 
     private void OnMouseDown()
@@ -27,24 +24,28 @@ public class Splitter : MonoBehaviour
         Destroy(gameObject);
     }
 
+    public void SetSplitChance(float splitChance)
+    {
+        _splitChance = splitChance;
+    }
+
     private void Split()
     {
         int splitCount = Random.Range(_minQuantityCubes, _maxQuantityCubes + 1);
 
         for (int i = 0; i < splitCount; i++)
         {
-            Vector3 randomOffset = Random.insideUnitSphere * 0.5f;
+            float offsetRadius = 0.5f;
+
+            Vector3 randomOffset = Random.insideUnitSphere * offsetRadius;
 
             Vector3 newPosition = transform.position + randomOffset;
 
+            Vector3 newScale = transform.localScale / 2f;
+
             float newSplitChance = _splitChance / 2f;
 
-            _cubeSpawner.SpawnCube(newPosition, transform.localScale / 2f, newSplitChance);
+            EventBus.OnClick?.Invoke(EventBus.OnSplit?.Invoke(newPosition, newScale, newSplitChance));
         }
-    }
-
-    public void SetSplitChance(float splitChance)
-    {
-        _splitChance = splitChance;
     }
 }
